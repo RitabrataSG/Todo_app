@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Todo List App</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2>Todo List</h2>
+        <form id="todo-form">
+            <div class="input-group mb-3">
+                <input type="text" id="task-input" class="form-control" placeholder="Enter a task" required>
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="submit">Add Task</button>
+                </div>
+            </div>
+        </form>
+        <ul id="task-list" class="list-group"></ul>
+        <button id="clear-btn" class="btn btn-danger mt-3">Clear All</button>
+    </div>
+
+    <script>
+       
+        const savedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+     
+        function saveTasks(tasks) {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+       
+        function renderTasks() {
+            const taskList = document.getElementById('task-list');
+            taskList.innerHTML = '';
+
+            savedTasks.forEach((task, index) => {
+                const taskItem = document.createElement('li');
+                taskItem.className = 'list-group-item';
+                taskItem.innerHTML = `
+            <input type="checkbox" class="task-check" data-index="${index}" ${task.checked ? 'checked' : ''}>
+            <span class="${task.checked ? 'task-completed' : ''}">${task.title}</span>
+            <button class="btn btn-sm btn-danger float-right delete-task" data-index="${index}">Delete</button>
+        `;
+                taskList.appendChild(taskItem);
+            });
+
+            
+            const checkboxes = document.querySelectorAll('.task-check');
+            const deleteButtons = document.querySelectorAll('.delete-task');
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', toggleTask);
+            });
+
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', deleteTask);
+            });
+        }
+
+       
+        function toggleTask() {
+            const index = this.dataset.index;
+            savedTasks[index].checked = !savedTasks[index].checked;
+            saveTasks(savedTasks);
+            renderTasks();
+        }
+
+       
+        function deleteTask() {
+            const index = this.dataset.index;
+            savedTasks.splice(index, 1);
+            saveTasks(savedTasks);
+            renderTasks();
+        }
+
+  
+        function addTask(event) {
+            event.preventDefault();
+            const taskInput = document.getElementById('task-input');
+            const title = taskInput.value.trim();
+
+            if (title !== '') {
+                savedTasks.push({
+                    title: title,
+                    checked: false
+                });
+                saveTasks(savedTasks);
+                taskInput.value = '';
+                renderTasks();
+            }
+        }
+
+        
+        function clearTasks() {
+            savedTasks.length = 0;
+            saveTasks(savedTasks);
+            renderTasks();
+        }
+
+        document.getElementById('todo-form').addEventListener('submit', addTask);
+        document.getElementById('clear-btn').addEventListener('click', clearTasks);
+
+   
+        renderTasks();
+
+        
+    </script>
+</body>
+
+</html>
